@@ -1,16 +1,15 @@
 services:
   db:
-    image: postgres:15-alpine
-    container_name: postgres-db
+    image: mysql:8.0
+    container_name: mysql-db
     restart: always
     environment:
-      POSTGRES_DB: db_despacho
-      POSTGRES_USER: user_admin
-      POSTGRES_PASSWORD: supersecure_password
+      MYSQL_DATABASE: db_despacho
+      MYSQL_ROOT_PASSWORD: root_password
     ports:
-      - "5432:5432"
+      - "3306:3306"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - mysql_data:/var/lib/mysql
     networks:
       - network-innovatech
 
@@ -21,9 +20,9 @@ services:
     ports:
       - "8080:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/db_despacho
-      SPRING_DATASOURCE_USERNAME: user_admin
-      SPRING_DATASOURCE_PASSWORD: supersecure_password
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/db_despacho?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root_password
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
     depends_on:
       - db
@@ -42,7 +41,7 @@ services:
       - network-innovatech
 
 volumes:
-  postgres_data:  # <-- AQUÍ ESTÁ LA CORRECCIÓN CLAVE
+  mysql_data:
 
 networks:
   network-innovatech:
