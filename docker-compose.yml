@@ -1,38 +1,49 @@
-version: '3.8'
-
 services:
-  postgres-db:
+  db:
     image: postgres:15-alpine
-    container_name: postgres_db
+    container_name: postgres-db
+    restart: always
     environment:
-      POSTGRES_DB: despachos_db
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: supersecretpassword
+      POSTGRES_DB: db_despacho
+      POSTGRES_USER: user_admin
+      POSTGRES_PASSWORD: supersecure_password
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - network-innovatech
 
   backend:
-    build:
-      context: ./innovatech-backend
-      dockerfile: Dockerfile
-    container_name: backend_app
+    image: 410397845770.dkr.ecr.us-east-1.amazonaws.com/innovatech-backend-repo:latest
+    container_name: innovatech-backend
+    restart: always
     ports:
       - "8080:8080"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/despachos_db
-      - SPRING_DATASOURCE_USERNAME=admin
-      - SPRING_DATASOURCE_PASSWORD=supersecretpassword
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/db_despacho
+      SPRING_DATASOURCE_USERNAME: user_admin
+      SPRING_DATASOURCE_PASSWORD: supersecure_password
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
     depends_on:
-      - postgres-db
+      - db
+    networks:
+      - network-innovatech
 
   frontend:
-    build:
-      context: ./innovatech-frontend
-      dockerfile: Dockerfile
-    container_name: frontend_app
+    image: 410397845770.dkr.ecr.us-east-1.amazonaws.com/innovatech-frontend-repo:latest
+    container_name: innovatech-frontend
+    restart: always
     ports:
       - "80:80"
     depends_on:
       - backend
+    networks:
+      - network-innovatech
+
+volumes:
+  postgres_data:  # <-- AQUÍ ESTÁ LA CORRECCIÓN CLAVE
+
+networks:
+  network-innovatech:
+    driver: bridge
