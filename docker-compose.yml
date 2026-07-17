@@ -7,11 +7,15 @@ services:
     environment:
       MYSQL_DATABASE: db_despacho
       MYSQL_ROOT_PASSWORD: root_password
-      MYSQL_ROOT_HOST: "%"  # <-- ESTA LÍNEA PERMITE LA CONEXIÓN DESDE CUALQUIER IP DE DOCKER
+      MYSQL_ROOT_HOST: "%"
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    deploy:
+      resources:
+        limits:
+          memory: 350M # Limita el consumo de MySQL para evitar fugas de memoria
     networks:
       - network-innovatech
 
@@ -26,8 +30,14 @@ services:
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root_password
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      # Forzamos a la Máquina Virtual de Java a restringir su consumo máximo de memoria RAM
+      JAVA_OPTS: "-XX:MaxRAMPercentage=75.0 -Xmx300m"
     depends_on:
       - db
+    deploy:
+      resources:
+        limits:
+          memory: 350M # Evita que Spring Boot sobrepase el límite asignado
     networks:
       - network-innovatech
 
@@ -39,6 +49,10 @@ services:
       - "80:80"
     depends_on:
       - backend
+    deploy:
+      resources:
+        limits:
+          memory: 100M # Nginx es sumamente liviano, 100M es más que suficiente
     networks:
       - network-innovatech
 
